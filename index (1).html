@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Smart Hisab</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f4f1ea;--card:#fffdf8;--ink:#1d2b24;--mute:#6b7a72;--line:#e2ddd0;--green:#0f6b4f;--red:#b83a2e;--blue:#2a5ca8;--amber:#b7791f;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121815;--card:#1b2420;--ink:#e8efe9;--mute:#93a39a;--line:#2b3832;--green:#3fb589;--red:#ee7b6e;--blue:#7da8ee;--amber:#e0a94a}}
+:root[data-theme="dark"]{--bg:#121815;--card:#1b2420;--ink:#e8efe9;--mute:#93a39a;--line:#2b3832;--green:#3fb589;--red:#ee7b6e;--blue:#7da8ee;--amber:#e0a94a}
+*{box-sizing:border-box}
+button{touch-action:manipulation}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Hind Siliguri','Noto Sans Bengali','Segoe UI',sans-serif;font-size:16px;line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px 96px}
+h1{font-size:26px;margin:4px 0 0;font-weight:700}
+.sub{color:var(--mute);margin:0 0 16px;font-size:14px}
+.profit{background:var(--green);color:#fff;border-radius:18px;padding:18px 20px;margin-bottom:12px}
+.profit small{opacity:.85;font-size:14px}
+.profit .big{font-size:38px;font-weight:700;line-height:1.2}
+.profit.loss{background:var(--red)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;border-left-width:5px}
+.box small{color:var(--mute);font-size:13px;display:block}
+.box b{font-size:20px}
+.b-sale{border-left-color:var(--green)}.b-exp{border-left-color:var(--red)}.b-buy{border-left-color:var(--amber)}.b-inv{border-left-color:var(--blue)}
+h2{font-size:18px;margin:8px 0 10px}
+.form{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:20px}
+.types{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.types button{border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:12px;padding:10px 4px;font:inherit;font-weight:600;cursor:pointer}
+.types button.on{color:#fff;border-color:transparent}
+.types button.on[data-t=sale]{background:var(--green)}.types button.on[data-t=expense]{background:var(--red)}
+.types button.on[data-t=purchase]{background:var(--amber)}.types button.on[data-t=invest]{background:var(--blue)}
+label{display:block;font-size:14px;color:var(--mute);margin:8px 0 3px}
+input{width:100%;font:inherit;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+input:focus,button:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+.save{width:100%;margin-top:14px;padding:13px;border:0;border-radius:12px;background:var(--ink);color:var(--bg);font:inherit;font-size:17px;font-weight:700;cursor:pointer}
+.err{color:var(--red);font-size:14px;min-height:20px;margin-top:6px}
+.tabs{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto}
+.tabs button{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:20px;padding:6px 14px;font:inherit;font-size:14px;cursor:pointer}
+.tabs button.on{background:var(--ink);color:var(--bg)}
+.tx{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.dot{width:10px;height:36px;border-radius:5px;flex:none}
+.tx .m{flex:1;min-width:0}
+.tx .d{font-weight:600;overflow-wrap:anywhere}
+.tx .s{font-size:13px;color:var(--mute)}
+.amt{font-weight:700;white-space:nowrap}
+.del{border:0;background:transparent;color:var(--red);font:inherit;font-size:14px;padding:6px;cursor:pointer}
+.empty{text-align:center;color:var(--mute);padding:24px 8px;border:1px dashed var(--line);border-radius:12px}
+.note{font-size:13px;color:var(--mute);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Smart Hisab</h1>
+  <p class="sub" id="today"></p>
+
+  <div class="profit" id="pbox"><small id="plabel">আজকের লাভ</small><div class="big" id="profit">৳ ০</div>
+    <small>লাভ = বিক্রি − (খরচ + পণ্য কেনা)</small></div>
+  <div class="grid">
+    <div class="box b-sale"><small>আজকের মোট বিক্রি</small><b id="sale">৳ ০</b></div>
+    <div class="box b-exp"><small>আজকের মোট খরচ</small><b id="exp">৳ ০</b></div>
+    <div class="box b-buy"><small>আজ পণ্য কেনা</small><b id="buy">৳ ০</b></div>
+    <div class="box b-inv"><small>মোট বিনিয়োগ (সব সময়)</small><b id="inv">৳ ০</b></div>
+  </div>
+
+  <h2>নতুন লেনদেন যোগ করুন</h2>
+  <div class="form">
+    <div class="types" id="types">
+      <button data-t="sale" class="on">বিক্রি</button>
+      <button data-t="expense">খরচ</button>
+      <button data-t="purchase">পণ্য কেনা</button>
+      <button data-t="invest">নতুন বিনিয়োগ</button>
+    </div>
+    <label for="amount">টাকার পরিমাণ (৳)</label>
+    <input id="amount" type="text" inputmode="decimal" placeholder="যেমন: ৫০০">
+    <label for="desc">বিবরণ</label>
+    <input id="desc" type="text" maxlength="80" placeholder="যেমন: চাল ৫ কেজি বিক্রি">
+    <label for="date">তারিখ</label>
+    <input id="date" type="date">
+    <div class="err" id="err" role="alert"></div>
+    <button class="save" id="save">সংরক্ষণ করুন</button>
+  </div>
+
+  <h2>সব লেনদেন</h2>
+  <div class="tabs" id="tabs">
+    <button data-f="all" class="on">সব</button>
+    <button data-f="today">আজকের</button>
+    <button data-f="sale">বিক্রি</button>
+    <button data-f="expense">খরচ</button>
+    <button data-f="purchase">পণ্য কেনা</button>
+    <button data-f="invest">বিনিয়োগ</button>
+  </div>
+  <div id="list"></div>
+  <p class="note">ডেটা শুধু এই ফোনের ব্রাউজারে জমা থাকে। ব্রাউজারের ডেটা মুছলে হিসাবও মুছে যাবে।</p>
+</div>
+
+<script>
+window.onerror=function(m){var e=document.getElementById('err');if(e)e.textContent='ত্রুটি: '+m;};
+var KEY='smart_hisab_v1';
+var NAMES={sale:'বিক্রি',expense:'খরচ',purchase:'পণ্য কেনা',invest:'বিনিয়োগ'};
+var COLORS={sale:'var(--green)',expense:'var(--red)',purchase:'var(--amber)',invest:'var(--blue)'};
+var items=[],type='sale',filter='all';
+var memory=null;
+
+function load(){try{var r=localStorage.getItem(KEY);if(r){var a=JSON.parse(r);if(Array.isArray(a))items=a}}catch(e){items=[]}}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(items));return true}catch(e){return false}}
+
+function bn(n){return String(n).replace(/\d/g,function(d){return '০১২৩৪৫৬৭৮৯'[d]})}
+function en(s){return String(s).replace(/[০-৯]/g,function(d){return '০১২৩৪৫৬৭৮৯'.indexOf(d)})}
+function taka(n){var neg=n<0,v=Math.abs(Math.round(n*100)/100);
+  var p=v.toString().split('.'),i=p[0],o='';
+  if(i.length>3){o=','+i.slice(-3);i=i.slice(0,-3);while(i.length>2){o=','+i.slice(-2)+o;i=i.slice(0,-2)}}
+  var s=i+o+(p[1]?'.'+p[1]:'');
+  return (neg?'−':'')+'৳ '+bn(s)}
+function todayStr(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fmtDate(s){var p=s.split('-');return bn(p[2]+'/'+p[1]+'/'+p[0])}
+function sum(t,onlyToday){return items.filter(function(x){return x.type===t&&(!onlyToday||x.date===todayStr())}).reduce(function(a,x){return a+x.amount},0)}
+
+function render(){
+  var s=sum('sale',1),e=sum('expense',1),b=sum('purchase',1),p=s-e-b;
+  document.getElementById('sale').textContent=taka(s);
+  document.getElementById('exp').textContent=taka(e);
+  document.getElementById('buy').textContent=taka(b);
+  document.getElementById('inv').textContent=taka(sum('invest',0));
+  document.getElementById('profit').textContent=taka(p);
+  document.getElementById('plabel').textContent=p<0?'আজকের লোকসান':'আজকের লাভ';
+  document.getElementById('pbox').className='profit'+(p<0?' loss':'');
+  var list=items.slice().sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:b.id-a.id}).filter(function(x){
+    return filter==='all'||(filter==='today'?x.date===todayStr():x.type===filter)});
+  var box=document.getElementById('list');box.innerHTML='';
+  if(!list.length){var d=document.createElement('div');d.className='empty';d.textContent='কোনো লেনদেন নেই। উপরের ফর্ম থেকে প্রথম লেনদেন যোগ করুন।';box.appendChild(d);return}
+  list.forEach(function(x){
+    var row=document.createElement('div');row.className='tx';
+    var dot=document.createElement('div');dot.className='dot';dot.style.background=COLORS[x.type];
+    var m=document.createElement('div');m.className='m';
+    var d1=document.createElement('div');d1.className='d';d1.textContent=x.desc;
+    var d2=document.createElement('div');d2.className='s';d2.textContent=NAMES[x.type]+' • '+fmtDate(x.date);
+    m.appendChild(d1);m.appendChild(d2);
+    var a=document.createElement('div');a.className='amt';a.textContent=taka(x.amount);a.style.color=COLORS[x.type];
+    var del=document.createElement('button');del.className='del';del.textContent='মুছুন';
+    var armed=false;del.onclick=function(){if(!armed){armed=true;del.textContent='নিশ্চিত? আবার চাপুন';del.style.fontWeight='700';setTimeout(function(){armed=false;del.textContent='মুছুন';del.style.fontWeight=''},3000);return}items=items.filter(function(y){return y.id!==x.id});persist();render()};
+    row.appendChild(dot);row.appendChild(m);row.appendChild(a);row.appendChild(del);box.appendChild(row)});
+}
+
+document.getElementById('types').onclick=function(ev){var t=ev.target.dataset.t;if(!t)return;type=t;
+  [].forEach.call(this.children,function(c){c.classList.toggle('on',c.dataset.t===t)})};
+document.getElementById('tabs').onclick=function(ev){var f=ev.target.dataset.f;if(!f)return;filter=f;
+  [].forEach.call(this.children,function(c){c.classList.toggle('on',c.dataset.f===f)});render()};
+document.getElementById('save').onclick=function(){
+  var err=document.getElementById('err'),amt=parseFloat(en(document.getElementById('amount').value).replace(/,/g,''));
+  var desc=document.getElementById('desc').value.trim(),date=document.getElementById('date').value||todayStr();
+  if(!(amt>0)){err.textContent='সঠিক টাকার পরিমাণ লিখুন (০ এর বেশি)।';return}
+  if(!desc){err.textContent='বিবরণ লিখুন।';return}
+  items.push({id:Date.now(),type:type,amount:amt,desc:desc,date:date});
+  err.textContent=persist()?'':'সংরক্ষণ করা যায়নি। এই ব্রাউজারে ডেটা জমা রাখা বন্ধ থাকতে পারে।';
+  document.getElementById('amount').value='';document.getElementById('desc').value='';
+  render()};
+
+document.getElementById('date').value=todayStr();
+document.getElementById('today').textContent='আজ: '+fmtDate(todayStr());
+load();render();
+</script>
+</body>
+</html>
